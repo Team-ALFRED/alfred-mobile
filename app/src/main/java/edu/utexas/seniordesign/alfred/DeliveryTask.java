@@ -31,7 +31,7 @@ public class DeliveryTask extends AsyncTask<String, Void, Item> {
     protected Item doInBackground(final String... args) {
         Item result = null;
         try {
-            final String url = "http://alfred.lf.lc/deliver";
+            final String url = Constants.ALFRED_URL + "/deliver";
             RestTemplate restTemplate = new RestTemplate();
             restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
             result = restTemplate.postForObject(url, delivery, Item.class);

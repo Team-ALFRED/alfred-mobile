@@ -57,6 +57,7 @@ public class MainActivity extends FragmentActivity implements
 
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
+        getSupportFragmentManager().popBackStack();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack(null);
 

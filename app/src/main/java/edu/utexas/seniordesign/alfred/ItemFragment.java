@@ -7,6 +7,7 @@ import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 
 
@@ -23,6 +24,7 @@ public class ItemFragment extends ListFragment {
     private static final String TAG = "ItemFragment";
 
     private OnFragmentInteractionListener mListener;
+    private Activity mActivity;
 
     public ItemFragment() {
     }
@@ -31,13 +33,14 @@ public class ItemFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        new HttpRequestTask().execute();
+        new HttpRequestTask(this).execute();
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        mActivity = activity;
 
         try {
             mListener = (OnFragmentInteractionListener) activity;
@@ -70,10 +73,17 @@ public class ItemFragment extends ListFragment {
     }
 
     private class HttpRequestTask extends AsyncTask<Void, Void, Sync> {
+
+        private final ListFragment mFragment;
+
+        public HttpRequestTask(ListFragment fragment) {
+            mFragment = fragment;
+        }
+
         @Override
         protected Sync doInBackground(Void... params) {
             try {
-                final String url = "http://alfred.lf.lc/sync";
+                final String url = Constants.ALFRED_URL + "/sync";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 Sync sync = restTemplate.getForObject(url, Sync.class);
@@ -86,13 +96,11 @@ public class ItemFragment extends ListFragment {
         }
 
         @Override
-        protected void onPostExecute(Sync sync) {
-            if (getActivity() != null) {
-                ArrayAdapter<Item> adapter = new ArrayAdapter<>(getActivity(),
-                        android.R.layout.simple_list_item_1, android.R.id.text1, sync.getInv());
-                adapter.notifyDataSetChanged();
-                setListAdapter(adapter);
-            }
+        protected void onPostExecute(final Sync sync) {
+            ArrayAdapter<Item> adapter = new ArrayAdapter<>(mActivity,
+                    android.R.layout.simple_list_item_1, android.R.id.text1, sync.getInv());
+            adapter.notifyDataSetChanged();
+            setListAdapter(adapter);
         }
     }
 

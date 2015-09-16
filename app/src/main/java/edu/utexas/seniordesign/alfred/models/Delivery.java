@@ -1,22 +1,22 @@
 package edu.utexas.seniordesign.alfred.models;
 
 public class Delivery {
-    private String name;
+    private String item;
     private String location;
 
     public Delivery() {}
 
-    public Delivery(String name, String loc) {
-        setName(name);
+    public Delivery(String item, String loc) {
+        setItem(item);
         setLocation(loc);
     }
 
-    public void setName(String v) {
-        this.name = v;
+    public void setItem(String v) {
+        this.item = v;
     }
 
-    public String getName() {
-        return name;
+    public String getItem() {
+        return item;
     }
 
     public void setLocation(String v) {
@@ -28,6 +28,6 @@ public class Delivery {
     }
 
     public String toString() {
-        return String.format("%s [%s]", name, location);
+        return String.format("%s [%s]", item, location);
     }
 }
