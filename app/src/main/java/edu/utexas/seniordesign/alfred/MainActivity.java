@@ -6,7 +6,10 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import edu.utexas.seniordesign.alfred.models.Delivery;
+import edu.utexas.seniordesign.alfred.models.Item;
 
 public class MainActivity extends FragmentActivity implements
         ItemFragment.OnFragmentInteractionListener,
@@ -20,6 +23,7 @@ public class MainActivity extends FragmentActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "Main activity created!");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -84,14 +88,18 @@ public class MainActivity extends FragmentActivity implements
         loc = id;
 
         DeliveryFragment fragment = new DeliveryFragment();
-        new DeliveryTask(fragment).execute(item, loc);
+        Delivery delivery = new Delivery(item, loc);
+        new DeliveryTask(fragment, delivery).execute(item, loc);
         replaceFragment(fragment);
     }
 
     @Override
-    public void onDeliveryFragmentInteraction(boolean success) {
+    public void onDeliveryFragmentInteraction(Item result) {
         // TODO: handle delivery selection
-        Log.i(TAG, "Got delivery fragment interaction with success: " + success);
+        if (result.getError() != null) {
+            Toast.makeText(this, result.getError(), Toast.LENGTH_SHORT).show();
+        }
+        Log.i(TAG, "Got delivery fragment interaction with result: " + result);
 
         replaceFragment(new ItemFragment());
         clearBackStack();

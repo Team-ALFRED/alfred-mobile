@@ -1,31 +1,29 @@
 package edu.utexas.seniordesign.alfred;
 
 import android.app.Activity;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 
-import edu.utexas.seniordesign.alfred.dummy.DummyContent;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
-/**
- * A fragment representing a list of Items.
- * <p/>
- * <p/>
- * Activities containing this fragment MUST implement the {@link OnFragmentInteractionListener}
- * interface.
- */
+import java.util.ArrayList;
+
+import edu.utexas.seniordesign.alfred.dummy.DummyContent;
+import edu.utexas.seniordesign.alfred.models.Item;
+import edu.utexas.seniordesign.alfred.models.Sync;
+
 public class ItemFragment extends ListFragment {
+    private static final String TAG = "ItemFragment";
 
     private OnFragmentInteractionListener mListener;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public ItemFragment() {
     }
 
@@ -33,15 +31,14 @@ public class ItemFragment extends ListFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO: Change Adapter to display your content
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS));
+        new HttpRequestTask().execute();
     }
 
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -63,22 +60,40 @@ public class ItemFragment extends ListFragment {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
-            mListener.onItemFragmentInteraction(DummyContent.ITEMS.get(position).id);
+            Item item = (Item) getListAdapter().getItem(position);
+            mListener.onItemFragmentInteraction(item.getName());
         }
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
         public void onItemFragmentInteraction(String id);
+    }
+
+    private class HttpRequestTask extends AsyncTask<Void, Void, Sync> {
+        @Override
+        protected Sync doInBackground(Void... params) {
+            try {
+                final String url = "http://alfred.lf.lc/sync";
+                RestTemplate restTemplate = new RestTemplate();
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                Sync sync = restTemplate.getForObject(url, Sync.class);
+                return sync;
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Sync sync) {
+            if (getActivity() != null) {
+                ArrayAdapter<Item> adapter = new ArrayAdapter<>(getActivity(),
+                        android.R.layout.simple_list_item_1, android.R.id.text1, sync.getInv());
+                adapter.notifyDataSetChanged();
+                setListAdapter(adapter);
+            }
+        }
     }
 
 }
