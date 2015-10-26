@@ -3,14 +3,16 @@ package edu.utexas.seniordesign.alfred;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.InputStream;
 
@@ -21,6 +23,7 @@ public class MapFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
     private PhotoViewAttacher mAttacher;
+    private Activity mActivity;
 
     public MapFragment() {
     }
@@ -43,7 +46,8 @@ public class MapFragment extends Fragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-
+        mActivity = activity;
+        
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -59,7 +63,7 @@ public class MapFragment extends Fragment {
     }
 
     public interface OnFragmentInteractionListener {
-        public void onMapFragmentInteraction(String id);
+        public void onMapFragmentInteraction(Float[] id);
     }
 
     private class DownloadImageTask extends AsyncTask<Void, Void, Bitmap> {
@@ -72,27 +76,50 @@ public class MapFragment extends Fragment {
 
         @Override
         protected Bitmap doInBackground(Void... params) {
+            Bitmap result = null;
             try {
-                InputStream in = new java.net.URL(Constants.ALFRED_URL + "/map").openStream();
-                return BitmapFactory.decodeStream(in);
+                final String host = SettingsFragment.getPref(mActivity,
+                        SettingsFragment.PREF_KEY_IP_ADDRESS);
+                final String url = "http://" + host + "/map";
+                Log.d(TAG, "URL: " + url);
+                InputStream in = new java.net.URL(url).openStream();
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = 2;
+
+                result = BitmapFactory.decodeStream(in, null, options);
+                in.close();
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
             }
-            return null;
+            return result;
         }
 
         @Override
         protected void onPostExecute(Bitmap result) {
             if (result != null) {
                 map.setImageBitmap(result);
+
+                if (mAttacher != null) {
+                    mAttacher.cleanup();
+                }
+
                 mAttacher = new PhotoViewAttacher(map);
+
+                mAttacher.setMaximumScale(20.0f);
+                // mAttacher.setScale(3.0f, 425, 775, true);
+
                 mAttacher.setOnPhotoTapListener(new PhotoViewAttacher.OnPhotoTapListener() {
                     @Override
                     public void onPhotoTap(View v, float x, float y) {
-                        String msg = String.format("%g:%g", x * v.getWidth(), y * v.getHeight());
+                        Float[] msg = new Float[2];
+                        msg[0] = x;
+                        msg[1] = y;
                         mListener.onMapFragmentInteraction(msg);
                     }
                 });
+            } else {
+                Toast.makeText(mActivity, getString(R.string.error_network), Toast.LENGTH_SHORT);
             }
         }
     }

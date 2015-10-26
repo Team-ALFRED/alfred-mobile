@@ -1,5 +1,6 @@
 package edu.utexas.seniordesign.alfred;
 
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -14,10 +15,15 @@ public class DeliveryTask extends AsyncTask<String, Void, Item> {
     private static final String TAG = "DeliveryTask";
     private DeliveryFragment fragment;
     private Delivery delivery;
+    private final String url;
 
-    public DeliveryTask(DeliveryFragment fragment, Delivery d) {
+    public DeliveryTask(Activity activity, DeliveryFragment fragment, Delivery d) {
         this.fragment = fragment;
         this.delivery = d;
+
+        final String host = SettingsFragment.getPref(activity,
+                SettingsFragment.PREF_KEY_IP_ADDRESS);
+        url = "http://" + host + "/deliver";
     }
 
     /** progress bar to show user that the backup is processing. */
@@ -30,14 +36,11 @@ public class DeliveryTask extends AsyncTask<String, Void, Item> {
     @Override
     protected Item doInBackground(final String... args) {
         Item result = null;
-        try {
-            final String url = Constants.ALFRED_URL + "/deliver";
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            result = restTemplate.postForObject(url, delivery, Item.class);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
+
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+        result = restTemplate.postForObject(url, delivery, Item.class);
+
         return result;
     }
 

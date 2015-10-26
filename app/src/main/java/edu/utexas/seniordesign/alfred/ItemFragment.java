@@ -3,20 +3,17 @@ package edu.utexas.seniordesign.alfred;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.app.ListFragment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-
-import edu.utexas.seniordesign.alfred.dummy.DummyContent;
 import edu.utexas.seniordesign.alfred.models.Item;
 import edu.utexas.seniordesign.alfred.models.Sync;
 
@@ -83,7 +80,10 @@ public class ItemFragment extends ListFragment {
         @Override
         protected Sync doInBackground(Void... params) {
             try {
-                final String url = Constants.ALFRED_URL + "/sync";
+                final String host = SettingsFragment.getPref(mActivity,
+                        SettingsFragment.PREF_KEY_IP_ADDRESS);
+                final String url = "http://" + host + "/sync";
+                Log.d(TAG, "URL: " + url);
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 Sync sync = restTemplate.getForObject(url, Sync.class);
@@ -97,10 +97,14 @@ public class ItemFragment extends ListFragment {
 
         @Override
         protected void onPostExecute(final Sync sync) {
-            ArrayAdapter<Item> adapter = new ArrayAdapter<>(mActivity,
-                    android.R.layout.simple_list_item_1, android.R.id.text1, sync.getInv());
-            adapter.notifyDataSetChanged();
-            setListAdapter(adapter);
+            if (sync != null) {
+                ArrayAdapter<Item> adapter = new ArrayAdapter<>(mActivity,
+                        android.R.layout.simple_list_item_1, android.R.id.text1, sync.getInv());
+                adapter.notifyDataSetChanged();
+                setListAdapter(adapter);
+            } else {
+                Toast.makeText(mActivity, getString(R.string.error_network), Toast.LENGTH_SHORT);
+            }
         }
     }
 

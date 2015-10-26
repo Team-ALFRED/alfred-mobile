@@ -1,17 +1,21 @@
 package edu.utexas.seniordesign.alfred;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import android.preference.PreferenceManager;
+import android.app.Fragment;
+import android.app.FragmentTransaction;
+import android.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import edu.utexas.seniordesign.alfred.models.Delivery;
 import edu.utexas.seniordesign.alfred.models.Item;
 
-public class MainActivity extends FragmentActivity implements
+public class MainActivity extends AppCompatActivity implements
         ItemFragment.OnFragmentInteractionListener,
         MapFragment.OnFragmentInteractionListener,
         DeliveryFragment.OnFragmentInteractionListener {
@@ -19,7 +23,27 @@ public class MainActivity extends FragmentActivity implements
     private static final String TAG = "MainActivity";
 
     private String item = null;
-    private String loc = null;
+    private Float[] loc = null;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                replaceFragment(new SettingsFragment());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,18 +70,27 @@ public class MainActivity extends FragmentActivity implements
             firstFragment.setArguments(getIntent().getExtras());
 
             // Add the fragment to the 'fragment_container' FrameLayout
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, firstFragment).commit();
+            getFragmentManager().beginTransaction().add(R.id.fragment_container,
+                    firstFragment).commit();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(getFragmentManager().getBackStackEntryCount() != 0) {
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
         }
     }
 
     private void replaceFragment(Fragment fragment) {
         // Create fragment and give it an argument specifying the article it should show
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
         // Replace whatever is in the fragment_container view with this fragment,
         // and add the transaction to the back stack so the user can navigate back
-        getSupportFragmentManager().popBackStack();
+        getFragmentManager().popBackStack();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack(null);
 
@@ -66,7 +99,7 @@ public class MainActivity extends FragmentActivity implements
     }
 
     private void clearBackStack() {
-        FragmentManager manager = getSupportFragmentManager();
+        FragmentManager manager = getFragmentManager();
         if (manager.getBackStackEntryCount() > 0) {
             FragmentManager.BackStackEntry first = manager.getBackStackEntryAt(0);
             manager.popBackStack(first.getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -83,25 +116,28 @@ public class MainActivity extends FragmentActivity implements
     }
 
     @Override
-    public void onMapFragmentInteraction(String id) {
+    public void onMapFragmentInteraction(Float[] id) {
         // TODO: handle location selection
         Log.i(TAG, "Got location fragment interaction with id: " + id);
         loc = id;
 
         DeliveryFragment fragment = new DeliveryFragment();
         Delivery delivery = new Delivery(item, loc);
-        new DeliveryTask(fragment, delivery).execute(item, loc);
+        new DeliveryTask(this, fragment, delivery).execute();
         replaceFragment(fragment);
     }
 
     @Override
     public void onDeliveryFragmentInteraction(Item result) {
         // TODO: handle delivery selection
-        if (result.getError() != null) {
-            Toast.makeText(this, result.getError(), Toast.LENGTH_SHORT).show();
+        if (result != null) {
+            if (result.getError() != null) {
+                Toast.makeText(this, result.getError(), Toast.LENGTH_SHORT).show();
+            }
+            Log.i(TAG, "Got delivery fragment interaction with result: " + result);
+        } else {
+            Toast.makeText(this, getString(R.string.error_network), Toast.LENGTH_SHORT);
         }
-        Log.i(TAG, "Got delivery fragment interaction with result: " + result);
-
         replaceFragment(new ItemFragment());
         clearBackStack();
     }

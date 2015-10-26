@@ -2,11 +2,11 @@ package edu.utexas.seniordesign.alfred.models;
 
 public class Delivery {
     private String item;
-    private String location;
+    private Float[] location;
 
     public Delivery() {}
 
-    public Delivery(String item, String loc) {
+    public Delivery(String item, Float[] loc) {
         setItem(item);
         setLocation(loc);
     }
@@ -19,15 +19,15 @@ public class Delivery {
         return item;
     }
 
-    public void setLocation(String v) {
+    public void setLocation(Float[] v) {
         this.location = v;
     }
 
-    public String getLocation() {
+    public Float[] getLocation() {
         return location;
     }
 
     public String toString() {
-        return String.format("%s [%s]", item, location);
+        return String.format("%s [%d, %d]", item, location[0], location[1]);
     }
 }
