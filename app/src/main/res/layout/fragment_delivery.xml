@@ -9,4 +9,12 @@
         android:layout_height="wrap_content"
         android:id="@+id/progressBarDelivery"
         android:layout_gravity="center" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hard Stop"
+        android:id="@+id/buttonHardStop"
+        android:layout_gravity="right|bottom" />
+
 </FrameLayout>

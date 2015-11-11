@@ -5,11 +5,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ListFragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -33,6 +34,12 @@ public class ItemFragment extends ListFragment {
         new HttpRequestTask(this).execute();
     }
 
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_item, null);
+        return v;
+    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -103,7 +110,7 @@ public class ItemFragment extends ListFragment {
                 adapter.notifyDataSetChanged();
                 setListAdapter(adapter);
             } else {
-                Toast.makeText(mActivity, getString(R.string.error_network), Toast.LENGTH_SHORT);
+                Toast.makeText(mActivity, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
             }
         }
     }

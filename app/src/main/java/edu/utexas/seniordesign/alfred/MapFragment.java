@@ -3,6 +3,10 @@ package edu.utexas.seniordesign.alfred;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.DrawFilter;
+import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -85,9 +89,15 @@ public class MapFragment extends Fragment {
                 InputStream in = new java.net.URL(url).openStream();
 
                 BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inSampleSize = 2;
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                // options.inSampleSize = 2;
+                options.inScaled = false;
+                options.inDither = false;
 
-                result = BitmapFactory.decodeStream(in, null, options);
+                Bitmap decoded = BitmapFactory.decodeStream(in, null, options);
+                result = Bitmap.createScaledBitmap(decoded, decoded.getWidth() * 4, decoded.getHeight() * 4, false);
+                decoded.recycle();
+
                 in.close();
             } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
@@ -119,7 +129,7 @@ public class MapFragment extends Fragment {
                     }
                 });
             } else {
-                Toast.makeText(mActivity, getString(R.string.error_network), Toast.LENGTH_SHORT);
+                Toast.makeText(mActivity, getString(R.string.error_network), Toast.LENGTH_SHORT).show();
             }
         }
     }

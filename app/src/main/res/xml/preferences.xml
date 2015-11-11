@@ -8,5 +8,11 @@
             android:title="@string/pref_title_ip_address"
             android:defaultValue="@string/pref_default_ip_address"
         />
+        <EditTextPreference
+            android:key="pref_key_secret_token"
+            android:summary="@string/pref_summary_secret_token"
+            android:title="@string/pref_title_secret_token"
+            android:defaultValue="@string/pref_default_secret_token"
+        />
     </PreferenceCategory>
 </PreferenceScreen>

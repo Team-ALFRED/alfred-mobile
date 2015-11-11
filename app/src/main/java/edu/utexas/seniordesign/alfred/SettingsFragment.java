@@ -9,7 +9,7 @@ import android.preference.PreferenceManager;
 public class SettingsFragment extends PreferenceFragment {
     public static final String PREF_KEY_NETWORK_SETTINGS = "pref_key_network_settings";
     public static final String PREF_KEY_IP_ADDRESS = "pref_key_ip_address";
-    public static final String PREF_DEFAULT_IP_ADDRESS = "10.147.68.229:5000";
+    public static final String PREF_KEY_SECRET_TOKEN = "pref_key_secret_token";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,7 @@ public class SettingsFragment extends PreferenceFragment {
 
     public static String getPref(Activity activity, String prefKey) {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(activity);
-        return sharedPref.getString(prefKey, PREF_DEFAULT_IP_ADDRESS);
+        return sharedPref.getString(prefKey, null);
     }
+
 }
